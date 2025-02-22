@@ -197,6 +197,9 @@ else
 		echo "[?] Tell me a name for the client config file [no special characters]."
 		read -rp "[+] Client name: " -e CLIENT_NAME
 	fi
+
+	WG_CONFIG_NAME="$(basename "$WG_CONFIG" .conf)"
+
 	CLIENT_PRIVKEY="$(wg genkey)"
 	CLIENT_PUBKEY="$(echo "$CLIENT_PRIVKEY" | wg pubkey)"
 	PRIVATE_SUBNET="$(head -n1 "$WG_CONFIG" | awk '{print $2}')"
