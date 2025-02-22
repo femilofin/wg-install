@@ -174,10 +174,20 @@ PersistentKeepalive = 25" > "$HOME/client-$WG_CONFIG_NAME.conf"
 	echo "[+] Client config --> $HOME/client-$WG_CONFIG_NAME.conf"
 	echo "[+] Now reboot the server and enjoy your fresh VPN installation! :^)"
 else
-	# Server is installed, add a new client or remove server
-	echo "[1] Remove WireGuard."
-	echo "[2] Add client."
-	read -rp "[+] Choose from above options [1/2]: " -e ADD_REMOVE
+	# Server is installed, handle command line arguments
+	if [ $# -eq 0 ]; then
+		echo "Usage:"
+		echo "  $0 1     - Remove WireGuard"
+		echo "  $0 2 [client_name]  - Add new client (client_name optional)"
+		exit 1
+	fi
+
+	ADD_REMOVE="$1"
+	if [[ ! "$ADD_REMOVE" =~ ^[12]$ ]]; then
+		echo "[-] First argument must be either 1 (remove) or 2 (add client)"
+		exit 1
+	fi
+
 	if [ "$ADD_REMOVE" == "1" ]; then
 		echo "[*] Removing WireGuard from the server..."
 		rm -rf "$WG_CONFIG";
@@ -192,10 +202,18 @@ else
 		echo "[i] WireGuard removed from the server!"
 		exit 0
 	fi
-	CLIENT_NAME="$1"
+
+	# Handle add client case
+	CLIENT_NAME="$2"
 	if [ "$CLIENT_NAME" == "" ]; then
 		echo "[?] Tell me a name for the client config file [no special characters]."
 		read -rp "[+] Client name: " -e CLIENT_NAME
+	fi
+
+	# Validate client name
+	if [[ ! "$CLIENT_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+		echo "[-] Client name can only contain alphanumeric characters, underscores and hyphens"
+		exit 1
 	fi
 
 	WG_CONFIG_NAME="$(basename "$WG_CONFIG" .conf)"
